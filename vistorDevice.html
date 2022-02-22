@@ -1,0 +1,48 @@
+<html>
+  <head>
+    <title>游客设备模拟程序</title>
+  </head>
+  <body>
+    <script type="text/javascript">
+      /*  设备启动  */
+      console.log("设备启动中...");
+      console.log("设备启动成功");
+      console.log("开始连接mqtt服务器");
+      // 生成clientId，用于通信
+      const clientId = 'mqttjs_' + Math.random().toString(16).substr(2, 8);
+      // 连接服务器，生成游客
+      const client = mqtt.connect("ws://localhost:3010", {clientId});
+      console.log("连接服务器成功");
+      // 订阅一些需要用到的主题  使用主题作为消息通道，当然还有一种选择，payload内容里面存一个消息类型
+      // 生成门票topic 用于生成门票
+      const create_ticket = "vistor/create_ticket/" + clientId; 
+      // 体温报警topic 用于通知游客 
+      const bodyTem_exception = "vistor/bodyTem_exception/" + clientId;
+      // 景点进入提醒topic 用于告诉游客进入了景点
+      const enter_scenePoint = "vistor/enter_scenePoint/" + clientId;
+      // 禁区进入警告topic 用于告诉游客进入了禁区
+      const enter_dangerArea = "vistor/enter_dangerArea/" + clientId;
+      // 充值topic 用于游客充值
+      const increase_deposit = "vistor/increase_deposit/" + clientId;
+      // 景点拥堵预报topic 用于对拥堵概率、程度、时段预报 【公共消息】
+      const predict_scenePoint = "vistor/predict_scenePoint"; 
+      // 公共消息topic 用于接收一些不重要的公共消息 比如哪个景点的美丽
+      const message_public = "vistor/message_public";
+      // 私人消息topic 用于接收一些不太重要的私人消息 比如密切接触者
+      const message_private = "vistor/message_private/" + clientId;
+      
+      // 向售票系统客户端订阅的获取clientId的主题发送游客的clientId
+      var get_clientId = "ticket/get_clientId"
+      client.publish(get_clientId, clientId, (err) => {
+        if(!err) console.log("发送clientId成功");
+      })
+
+      client.on('message', (topic, payload) => {
+        switch(topic) {
+          case ""
+        }
+      })
+
+    </script>
+  </body>
+</html>
