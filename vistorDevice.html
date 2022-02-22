@@ -30,19 +30,71 @@
       const message_public = "vistor/message_public";
       // 私人消息topic 用于接收一些不太重要的私人消息 比如密切接触者
       const message_private = "vistor/message_private/" + clientId;
-      
       // 向售票系统客户端订阅的获取clientId的主题发送游客的clientId
       var get_clientId = "ticket/get_clientId"
+
+      client.subscribe(create_ticket);
+      client.subscribe(bodyTem_exception);
+      client.subscribe(enter_dangerArea);
+      client.subscribe(enter_scenePoint);
+      client.subscribe(increase_deposit);
+      client.subscribe(predict_scenePoint);
+      client.subscribe(message_private);
+      client.subscribe(message_public);
+
+      // 游客对象
+      var vistor = {};
+
       client.publish(get_clientId, clientId, (err) => {
         if(!err) console.log("发送clientId成功");
       })
 
+      // 监控平台订阅的主题
+      const create_vistor_model = "vistor/create_vistor_model";
+      const update_vistor_model = "vistor/update_vistor_model";
+      const destroy_vistor_model = "vistor/destroy_vistor_model";
+      const vistor_get_help = "vistor/vistor_get_help";
+
+      // 发布信息至游客创建主题
+      client.publish(create_vistor_model, JSON.stringify(vistor), function(err) {
+        if(err) console.log("创建游客模型失败");
+      })
+      // 等待消息
       client.on('message', (topic, payload) => {
         switch(topic) {
-          case ""
+          // 写入门票数据
+          case create_ticket:
+            var ticket = JSON.parse(payload.toString()); // obj
+            vistor.identity = ticket.identity;
+            vistor.name = ticket.name;
+            vistor.bodyTem = ticket.bodyTem;
+            vistor.status = ticket.status;
+            vistor.position = ticket.position;
+            // 取消生成订阅门票 因为这个是特定的 用完就没用了
+            client.unsubscribe(create_ticket);
+            break;
+          case bodyTem_exception:
+
+            break;
+
         }
       })
 
+      // 循环上报数据 60秒一次
+      var timer = setInterval(uploadData, 60000);  // timer 用于清除定时器  clearInterval(timer)
+
+      // 上报函数
+      function uploadData() {
+        var bodyTem = Number((Math.random()*3+35).toFixed(1));
+        var longtitude = Number((Math.random()/100 + 113.08).toFixed(6))
+        var latitude = Number((Math.random()/100*2 + 22.58).toFixed(6));
+        vistor.bodyTem = bodyTem;
+        vistor.position = [longtitude, latitude];
+        // 发送
+        client.publish(update_vistor_model, JSON.stringify(vistor), function(err) {
+          if(err) console.log(err);
+        })
+      }
     </script>
   </body>
 </html>
