@@ -1,12 +1,13 @@
 // mosca 服务端  不使用固定集合
 var mosca = require('mosca')
 var MongoClient = require('mongodb').MongoClient;
-var url = 'mongodb://localhost:27017/test';
-var test;
+var dtime = require('time-formater');
+var url = 'mongodb://localhost:27017/scene';
+var scene;
 MongoClient.connect(url, function (err, db) {
 	if(err) throw err;
 	console.log("mongo数据库已连接");
-	test = db;
+	scene = db;
 })
 
 // 实例化服务器
@@ -24,32 +25,29 @@ server.on('ready', function() {
 });
 // 服务器处理发布端的事情
 server.on('published', function(packet, client) {
-  var data = JSON.stringify(packet.payload.toString())// {clientId: , topic: }
   console.log("服务器接收客户端发布");
-  console.log("Published: ", data);
-  var topic = data.topic;
+  var topic = packet.topic; // {topic, payload} packet.payload.toString()
   switch(topic) {
-    case "create_vistor_model":
-      // 插入数据库
-
-      break;
-    case "update_vistor_model":
-      // 插入数据库
-
+    case "vistor/update_vistor_model":
+      // 更新游客数据时 插入游客表
+      var vistor = {};
+      var v = JSON.parse(packet.payload.toString());
+      vistor.identity = v.identity;
+      vistor.name = v.name;
+      vistor.bodyTem = v.bodyTem;
+      vistor.position = v.position;
+      vistor.date_time = dtime().format('YYYY-MM-DD HH:mm'); // 加上更新时间
+      console.log('vistor', vistor);
+      try {
+        scene.collection("vistors").insertOne(vistor, function(err, res) {
+          if(err) throw err;
+          console.log("插入成功")
+        })
+      } catch(err) {
+        console.log(err);
+      }
       break;
   }
-  // try {
-  //   data = JSON.parse(data);
-  //   if(data.name) {
-  //   // 插入数据库
-  //   test.collection("mos_test").insertOne(data, function (err, res) {
-  //     if(err) throw err;
-  //     console.log("插入成功");
-  //   })
-  // }
-  // }catch(err) {
-  //   console.log("这不是主要内容")
-  // }
 
 });
 // 服务器处理订阅端的事情

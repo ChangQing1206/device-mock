@@ -1,6 +1,7 @@
 <html>
   <head>
     <title>游客设备模拟程序</title>
+    <script src="https://cdn.bootcdn.net/ajax/libs/mqtt/4.3.4/mqtt.js"></script>
   </head>
   <body>
     <script type="text/javascript">
@@ -42,8 +43,9 @@
       client.subscribe(message_private);
       client.subscribe(message_public);
 
-      // 游客对象
+      // 游客对象包含所有信息，但上传的信息可以选择性上传，比如clientId不需要更新就不需上传
       var vistor = {};
+      vistor.clientId = clientId; // 保存id 
 
       client.publish(get_clientId, clientId, (err) => {
         if(!err) console.log("发送clientId成功");
@@ -70,6 +72,7 @@
             vistor.bodyTem = ticket.bodyTem;
             vistor.status = ticket.status;
             vistor.position = ticket.position;
+            
             // 取消生成订阅门票 因为这个是特定的 用完就没用了
             client.unsubscribe(create_ticket);
             break;
@@ -81,7 +84,7 @@
       })
 
       // 循环上报数据 60秒一次
-      var timer = setInterval(uploadData, 60000);  // timer 用于清除定时器  clearInterval(timer)
+      var timer = setInterval(uploadData, 6000);  // timer 用于清除定时器  clearInterval(timer)
 
       // 上报函数
       function uploadData() {

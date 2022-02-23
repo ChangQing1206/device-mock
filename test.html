@@ -1,0 +1,24 @@
+<html>
+
+<body>
+  <audio autoplay>
+    <source src="https://tts.youdao.com/fanyivoice?word=你的体温异常&le=zh&keyfrom=speaker-target
+    test.html:14" type="audio/mpeg">
+  </audio>
+
+  <script>
+    var request = new XMLHttpRequest();
+    request.onload = function () {
+      if(request.status == 200) {
+        console.log(request)
+      }
+    }
+    function say(text) {
+      var url = "https://tts.youdao.com/fanyivoice?word=" + text + "&le=zh&keyfrom=speaker-target";
+      console.log(url);
+      request.open('GET', url);
+    }
+    say('你的体温异常');
+  </script>
+</body>
+</html>
