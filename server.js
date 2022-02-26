@@ -47,6 +47,8 @@ server.on('published', function(packet, client) {
         console.log(err);
       }
       break;
+
+
   }
 
 });

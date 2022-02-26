@@ -31,6 +31,7 @@
       const message_public = "vistor/message_public";
       // 私人消息topic 用于接收一些不太重要的私人消息 比如密切接触者
       const message_private = "vistor/message_private/" + clientId;
+      
       // 向售票系统客户端订阅的获取clientId的主题发送游客的clientId
       var get_clientId = "ticket/get_clientId"
 
@@ -78,6 +79,10 @@
             break;
           case bodyTem_exception:
 
+            break;
+          // 游客充值
+          case increase_deposit:
+            
             break;
 
         }
