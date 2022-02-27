@@ -1,0 +1,43 @@
+<html>
+<head>
+  <script src="https://cdn.bootcdn.net/ajax/libs/mqtt/4.3.4/mqtt.js"></script>
+</head>
+<body>
+  <script>
+      // mqtt 测试
+      const clientId = 'mqttjs_' + Math.random().toString(16).substr(2, 8);
+      // 连接服务器，生成充值系统
+      const deposit_system = mqtt.connect("ws://localhost:3010", {clientId});
+      // 充值100块
+      var content = {
+        name: 'ss',
+        identity: '440881199912066767',
+        deposit: 100
+      }
+      var topic = 'deposit/increaseDeposit/' + 'f10cf977'
+      deposit_system.publish(topic, JSON.stringify(content), function(err) {
+        if(err) console.log(err);
+        setTimeout(() => {
+          // 1秒后检查充值状态是否改变
+          if(this.status) {
+            content.status = "充值成功";
+          }else {
+            content.status = "充值失败";
+          }
+        }, 1000)
+      })
+      var increase_deposit_response = "deposit/increaseDepositResponse/" + clientId;
+      deposit_system.subscribe(increase_deposit_response);
+
+      deposit_system.on('message', (topic, payload) => {
+        switch(topic) {
+          case increase_deposit_response:
+            // 记录充值状态
+            this.status = payload.toString();
+        }
+      })
+
+
+  </script>
+</body>
+</html>

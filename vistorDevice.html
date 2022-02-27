@@ -17,6 +17,8 @@
       // 订阅一些需要用到的主题  使用主题作为消息通道，当然还有一种选择，payload内容里面存一个消息类型
       // 生成门票topic 用于生成门票
       const create_ticket = "vistor/create_ticket/" + clientId; 
+      // 门票创建响应主题
+      const create_ticket_response = "ticket/create_ticket_response/" + clientId;
       // 体温报警topic 用于通知游客 
       const bodyTem_exception = "vistor/bodyTem_exception/" + clientId;
       // 景点进入提醒topic 用于告诉游客进入了景点
@@ -25,6 +27,8 @@
       const enter_dangerArea = "vistor/enter_dangerArea/" + clientId;
       // 充值topic 用于游客充值
       const increase_deposit = "vistor/increase_deposit/" + clientId;
+      // 充值响应topic 用于充值回应
+      const increase_deposit_response = "vistor/increase_deposit_response/" + clientId;
       // 景点拥堵预报topic 用于对拥堵概率、程度、时段预报 【公共消息】
       const predict_scenePoint = "vistor/predict_scenePoint"; 
       // 公共消息topic 用于接收一些不重要的公共消息 比如哪个景点的美丽
@@ -47,6 +51,7 @@
       // 游客对象包含所有信息，但上传的信息可以选择性上传，比如clientId不需要更新就不需上传
       var vistor = {};
       vistor.clientId = clientId; // 保存id 
+      var timer; // 定时器
 
       client.publish(get_clientId, clientId, (err) => {
         if(!err) console.log("发送clientId成功");
@@ -76,20 +81,38 @@
             
             // 取消生成订阅门票 因为这个是特定的 用完就没用了
             client.unsubscribe(create_ticket);
+
+            // 响应门票创建
+            var response = {
+              status: 1
+            }
+            client.publish(create_ticket_response, JSON.stringify(response), function(err) {
+              if(err) console.log("门票响应失败")
+            })
+
+            // 循环上报必须要在创建门票后再开始
+            // 循环上报数据 60秒一次
+            timer = setInterval(uploadData, 60000);  // timer 用于清除定时器  clearInterval(timer)
             break;
           case bodyTem_exception:
-
+            
             break;
           // 游客充值
           case increase_deposit:
-            
+            // 写入充值数据
+            var content = JSON.parse(payload.toString());
+            vistor.deposit = content.deposit;
+            // 发送充值响应
+            var response = {
+              status: 1
+            }
+            client.publish(increase_deposit_response, JSON.stringify(response), function(err) {
+              if(err) console.log("充值响应失败");
+            })
             break;
 
         }
       })
-
-      // 循环上报数据 60秒一次
-      var timer = setInterval(uploadData, 6000);  // timer 用于清除定时器  clearInterval(timer)
 
       // 上报函数
       function uploadData() {

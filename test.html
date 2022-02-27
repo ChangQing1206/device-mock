@@ -1,24 +1,56 @@
 <html>
-
+<head>
+  <script src="https://cdn.bootcdn.net/ajax/libs/mqtt/4.3.4/mqtt.js"></script>
+</head>
 <body>
-  <audio autoplay>
+  <!-- <audio autoplay>
     <source src="https://tts.youdao.com/fanyivoice?word=你的体温异常&le=zh&keyfrom=speaker-target
     test.html:14" type="audio/mpeg">
-  </audio>
+  </audio> -->
 
   <script>
-    var request = new XMLHttpRequest();
-    request.onload = function () {
-      if(request.status == 200) {
-        console.log(request)
-      }
-    }
-    function say(text) {
-      var url = "https://tts.youdao.com/fanyivoice?word=" + text + "&le=zh&keyfrom=speaker-target";
-      console.log(url);
-      request.open('GET', url);
-    }
-    say('你的体温异常');
+    // var request = new XMLHttpRequest();
+    // request.onload = function () {
+    //   if(request.status == 200) {
+    //     console.log(request)
+    //   }
+    // }
+    // function say(text) {
+    //   var url = "https://tts.youdao.com/fanyivoice?word=" + text + "&le=zh&keyfrom=speaker-target";
+    //   console.log(url);
+    //   request.open('GET', url);
+    // }
+    // say('你的体温异常');
+
+      // mqtt 测试
+      // const clientId = 'mqttjs_' + Math.random().toString(16).substr(2, 8);
+      const clientId = 'mqttjs_' + 'f10cf977';
+      // 连接服务器，生成游客
+      const client = mqtt.connect("ws://localhost:3010", {clientId});
+      
+      // 设备订阅了充值主题
+      var increase_deposit = "deposit/increaseDeposit/" + clientId;
+      client.subscribe(increase_deposit);
+
+      // 充值响应主题
+      var increase_deposit_response = "deposit/increaseDepositResponse/" + clientId;
+      client.on('message', (topic, payload) => {
+        switch(topic) {
+          case increase_deposit:
+            // 如果是充值消息
+            // 写入
+            // 发送响应
+            var response = {
+              status: 1
+            }
+            client.publish(increase_deposit_response, JSON.stringify(response), function(err) {
+              if(err) console.log("充值响应错误")
+            })
+
+        }
+      })
+      // 设备响应充值主题
+
   </script>
 </body>
 </html>
